@@ -1,0 +1,114 @@
+package com.qfleaf.usercenter.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.qfleaf.usercenter.common.ResponseCode;
+import com.qfleaf.usercenter.common.exception.BusinessException;
+import com.qfleaf.usercenter.model.User;
+import com.qfleaf.usercenter.model.dto.user.*;
+import com.qfleaf.usercenter.model.vo.LoginUserVO;
+import com.qfleaf.usercenter.model.vo.UserLoginResponse;
+import com.qfleaf.usercenter.service.UserService;
+import com.qfleaf.usercenter.mapper.UserMapper;
+import com.qfleaf.usercenter.utils.PasswordUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import java.util.List;
+
+/**
+ * @author qianfang
+ * @description 针对表【user(用户表)】的数据库操作Service实现
+ * @createDate 2025-02-21 21:43:47
+ */
+@Service
+@Slf4j
+public class UserServiceImpl extends ServiceImpl<UserMapper, User>
+        implements UserService {
+
+    // region 用户业务
+
+    @Override
+    public Void register(UserRegisterRequest userRegisterRequest) {
+        User entity = userRegisterRequest.toEntity();
+        boolean exists = baseMapper.exists(new LambdaQueryWrapper<User>()
+                .eq(User::getUsername, entity.getUsername()));
+        if (exists) {
+            throw new BusinessException(ResponseCode.BAD_PARAMS, "用户名已被使用");
+        }
+        entity.setPassword(PasswordUtil.encode(userRegisterRequest.getPassword()));
+        save(entity);
+        log.info("新用户注册, ID为: {}, 详细数据为: {}", entity.getUserId(), entity);
+        return null;
+    }
+
+    @Override
+    public UserLoginResponse login(UserLoginRequest userLoginRequest, HttpServletRequest request) {
+        User entity = userLoginRequest.toEntity();
+        User user = baseMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getUsername, entity.getUsername()));
+        if (user == null || user.getIsDeleted()) {
+            throw new BusinessException(ResponseCode.BAD_PARAMS, "用户不存在或已被禁用");
+        }
+        boolean matches = PasswordUtil.matches(userLoginRequest.getPassword(), user.getPassword());
+        if (!matches) {
+            throw new BusinessException(ResponseCode.BAD_AUTH, "用户名或密码错误");
+        }
+        LoginUserVO loginUserVO = new LoginUserVO(user);
+        request.getSession().setAttribute("currentUser", loginUserVO);
+        return new UserLoginResponse();
+    }
+
+    @Override
+    public LoginUserVO getCurrentUser(HttpServletRequest request) {
+        Object currentUser = request.getSession().getAttribute("currentUser");
+        if (!(currentUser instanceof LoginUserVO)) {
+            throw new BusinessException(ResponseCode.BAD_AUTH, "请先登陆");
+        }
+        return (LoginUserVO) currentUser;
+    }
+
+    @Override
+    public Void logout(HttpServletRequest request) {
+        request.getSession().removeAttribute("currentUser");
+        return null;
+    }
+
+    // endregion
+
+    // region 管理员业务
+    @Override
+    public void createUser(UserCreateRequest userCreateRequest) {
+        User entity = userCreateRequest.toEntity();
+        boolean exists = baseMapper.exists(new LambdaQueryWrapper<User>()
+                .eq(User::getUsername, entity.getUsername()));
+        if (exists) {
+            throw new BusinessException(ResponseCode.BAD_PARAMS, "用户名已存在");
+        }
+        entity.setPassword(PasswordUtil.encode(userCreateRequest.getPassword()));
+        save(entity);
+    }
+
+    @Override
+    public void updateUser(UserUpdateRequest userUpdateRequest) {
+        User entity = userUpdateRequest.toEntity();
+        entity.setPassword(PasswordUtil.encode(userUpdateRequest.getPassword()));
+        updateById(entity);
+    }
+
+    @Override
+    public void findUser(UserQueryRequest userQueryRequest) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper
+                .like(StringUtils.hasText(userQueryRequest.getUsername()), User::getUsername, userQueryRequest.getUsername())
+                .like(StringUtils.hasText(userQueryRequest.getPhone()), User::getPhone, userQueryRequest.getPhone())
+                .like(StringUtils.hasText(userQueryRequest.getEmail()), User::getEmail, userQueryRequest.getEmail())
+                .eq(User::getIsDeleted, false);
+        List<User> users = baseMapper.selectList(queryWrapper);
+        // todo 返回vo分页列表
+    }
+
+    // endregion
+}
