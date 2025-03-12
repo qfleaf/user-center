@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: user-center
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user-center-dev
+    driver-class-name: org.postgresql.Driver
+    username: qianfang
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: is_deleted # 全局逻辑删除字段名
+      logic-delete-value: true # 逻辑已删除值
+      logic-not-delete-value: false # 逻辑未删除值
