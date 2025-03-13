@@ -1,9 +1,11 @@
 package com.qfleaf.usercenter.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qfleaf.usercenter.model.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.qfleaf.usercenter.model.dto.user.*;
 import com.qfleaf.usercenter.model.vo.LoginUserVO;
+import com.qfleaf.usercenter.model.vo.UserListVO;
 import com.qfleaf.usercenter.model.vo.UserLoginResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -19,5 +21,5 @@ public interface UserService extends IService<User> {
     Void logout(HttpServletRequest request);
     void createUser(UserCreateRequest userCreateRequest);
     void updateUser(UserUpdateRequest userUpdateRequest);
-    void findUser(UserQueryRequest userQueryRequest);
+    IPage<UserListVO> findUserListVo(UserQueryRequest userQueryRequest);
 }

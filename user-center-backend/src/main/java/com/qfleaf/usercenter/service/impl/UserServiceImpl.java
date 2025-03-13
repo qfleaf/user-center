@@ -1,22 +1,23 @@
 package com.qfleaf.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qfleaf.usercenter.common.ResponseCode;
 import com.qfleaf.usercenter.common.exception.BusinessException;
+import com.qfleaf.usercenter.mapper.UserMapper;
 import com.qfleaf.usercenter.model.User;
 import com.qfleaf.usercenter.model.dto.user.*;
 import com.qfleaf.usercenter.model.vo.LoginUserVO;
+import com.qfleaf.usercenter.model.vo.UserListVO;
 import com.qfleaf.usercenter.model.vo.UserLoginResponse;
 import com.qfleaf.usercenter.service.UserService;
-import com.qfleaf.usercenter.mapper.UserMapper;
 import com.qfleaf.usercenter.utils.PasswordUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 /**
  * @author qianfang
@@ -29,7 +30,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 
     // region 用户业务
-
     @Override
     public Void register(UserRegisterRequest userRegisterRequest) {
         User entity = userRegisterRequest.toEntity();
@@ -75,7 +75,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         request.getSession().removeAttribute("currentUser");
         return null;
     }
-
     // endregion
 
     // region 管理员业务
@@ -99,16 +98,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public void findUser(UserQueryRequest userQueryRequest) {
+    public IPage<UserListVO> findUserListVo(UserQueryRequest userQueryRequest) {
+        IPage<UserListVO> page = new Page<>(userQueryRequest.getCurrent(), userQueryRequest.getSize());
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper
                 .like(StringUtils.hasText(userQueryRequest.getUsername()), User::getUsername, userQueryRequest.getUsername())
                 .like(StringUtils.hasText(userQueryRequest.getPhone()), User::getPhone, userQueryRequest.getPhone())
                 .like(StringUtils.hasText(userQueryRequest.getEmail()), User::getEmail, userQueryRequest.getEmail())
                 .eq(User::getIsDeleted, false);
-        List<User> users = baseMapper.selectList(queryWrapper);
-        // todo 返回vo分页列表
+        return baseMapper.selectUserListPageVo(page, queryWrapper);
     }
-
     // endregion
 }
