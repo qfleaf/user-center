@@ -3,6 +3,8 @@ package com.qfleaf.usercenter.model;
 import com.baomidou.mybatisplus.annotation.*;
 
 import java.util.Date;
+
+import com.qfleaf.usercenter.model.vo.UserVO;
 import lombok.Data;
 
 /**
@@ -26,4 +28,18 @@ public class User {
     private Integer role;
     @TableLogic
     private Boolean isDeleted;
+
+    public UserVO toVo() {
+        UserVO userVO = new UserVO();
+        userVO.setUserId(userId);
+        userVO.setUsername(username);
+        userVO.setPhone(phone);
+        userVO.setEmail(email);
+        userVO.setAvatar(avatar);
+        userVO.setGender(gender);
+        userVO.setRole(role);
+        userVO.setCreateTime(createTime);
+        userVO.setUpdateTime(updateTime);
+        return userVO;
+    }
 }
