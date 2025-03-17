@@ -1,10 +1,14 @@
 package com.qfleaf.usercenter.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qfleaf.usercenter.common.CommonResponse;
 import com.qfleaf.usercenter.common.ResponseCode;
+import com.qfleaf.usercenter.model.User;
 import com.qfleaf.usercenter.model.dto.user.*;
 import com.qfleaf.usercenter.model.vo.LoginUserVO;
+import com.qfleaf.usercenter.model.vo.UserListVO;
 import com.qfleaf.usercenter.model.vo.UserLoginResponse;
+import com.qfleaf.usercenter.model.vo.UserVO;
 import com.qfleaf.usercenter.service.UserService;
 import com.qfleaf.usercenter.utils.ResultUtil;
 import jakarta.annotation.Resource;
@@ -21,8 +25,7 @@ public class UserController {
     private UserService userService;
 
     // todo 业务优化
-    // 用户接口
-    // region
+    // region 用户接口
     @PostMapping("register")
     public CommonResponse<Void> register(@Valid @RequestBody UserRegisterRequest userRegisterRequest) {
         return ResultUtil.success(ResponseCode.SUCCESS_REGISTER, userService.register(userRegisterRequest));
@@ -45,31 +48,36 @@ public class UserController {
     // endregion
 
     // todo 权限校验
-    // 管理员接口
-    // region
+    // region 管理员接口
     @GetMapping("list")
-    public void list(UserQueryRequest userQueryRequest) {
-        userService.list(); // todo 修改逻辑进行分页
+    public CommonResponse<IPage<UserListVO>> list(UserQueryRequest userQueryRequest) {
+        IPage<UserListVO> userListVo = userService.findUserListVo(userQueryRequest);
+        return ResultUtil.success(ResponseCode.SUCCESS, userListVo);
     }
 
     @GetMapping("{id}")
-    public void find(@PathVariable Integer id) {
-        userService.getById(id);
+    public CommonResponse<UserVO> find(@PathVariable Integer id) {
+        User user = userService.getById(id);
+        UserVO vo = user.toVo();
+        return ResultUtil.success(ResponseCode.SUCCESS, vo);
     }
 
     @PostMapping
-    public void save(@Valid @RequestBody UserCreateRequest userCreateRequest) {
+    public CommonResponse<Void> save(@Valid @RequestBody UserCreateRequest userCreateRequest) {
         userService.createUser(userCreateRequest);
+        return ResultUtil.success(ResponseCode.SUCCESS, null);
     }
 
     @PutMapping
-    public void update(@Valid @RequestBody UserUpdateRequest userUpdateRequest) {
+    public CommonResponse<Void> update(@Valid @RequestBody UserUpdateRequest userUpdateRequest) {
         userService.updateUser(userUpdateRequest);
+        return ResultUtil.success(ResponseCode.SUCCESS, null);
     }
 
     @DeleteMapping
-    public void delete(@RequestParam Integer id) {
+    public CommonResponse<Void> delete(@RequestParam Integer id) {
         userService.removeById(id);
+        return ResultUtil.success(ResponseCode.SUCCESS, null);
     }
     // endregion
 
