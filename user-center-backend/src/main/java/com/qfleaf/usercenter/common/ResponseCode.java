@@ -18,10 +18,11 @@ public enum ResponseCode {
     BAD_AUTH(40100, "认证错误"),
     BAD_LOGIN(40101, "未登陆"),
     BAD_PERMIT(40300, "权限错误"),
+    BAD_FUNCTION(40501, "功能未启用"),
     // endregion
 
     // region 错误
-    ERROR(50000, "服务器繁忙")
+    ERROR(50000, "服务器繁忙"),
     // endregion
     ;
     private final int code;
