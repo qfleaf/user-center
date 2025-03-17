@@ -13,9 +13,12 @@ import com.qfleaf.usercenter.model.vo.LoginUserVO;
 import com.qfleaf.usercenter.model.vo.UserListVO;
 import com.qfleaf.usercenter.model.vo.UserLoginResponse;
 import com.qfleaf.usercenter.service.UserService;
+import com.qfleaf.usercenter.strategy.login.LoginStrategy;
+import com.qfleaf.usercenter.strategy.login.LoginStrategyManager;
 import com.qfleaf.usercenter.utils.PasswordUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -28,6 +31,13 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
+
+    private final LoginStrategyManager loginStrategyManager;
+
+    @Autowired
+    public UserServiceImpl(LoginStrategyManager loginStrategyManager) {
+        this.loginStrategyManager = loginStrategyManager;
+    }
 
     // region 用户业务
     @Override
@@ -46,17 +56,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public UserLoginResponse login(UserLoginRequest userLoginRequest, HttpServletRequest request) {
-        User entity = userLoginRequest.toEntity();
-        User user = baseMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getUsername, entity.getUsername()));
-        if (user == null || user.getIsDeleted()) {
-            throw new BusinessException(ResponseCode.BAD_PARAMS, "用户不存在或已被禁用");
-        }
-        boolean matches = PasswordUtil.matches(userLoginRequest.getPassword(), user.getPassword());
-        if (!matches) {
-            throw new BusinessException(ResponseCode.BAD_AUTH, "用户名或密码错误");
-        }
-        LoginUserVO loginUserVO = new LoginUserVO(user);
+        LoginStrategy loginStrategy = loginStrategyManager.getLoginStrategy(userLoginRequest.getLoginType());
+        LoginUserVO loginUserVO = loginStrategy.doLogin(userLoginRequest);
         request.getSession().setAttribute("currentUser", loginUserVO);
         return new UserLoginResponse();
     }
