@@ -10,6 +10,8 @@ public class UserLoginRequest {
     private String username;
     @NotBlank(message = "请输入密码")
     private String password;
+    @NotBlank(message = "登陆方式不能为空")
+    private String loginType;
 
     public User toEntity() {
         User user = new User();
