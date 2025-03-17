@@ -3,6 +3,7 @@ package com.qfleaf.usercenter.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qfleaf.usercenter.common.CommonResponse;
 import com.qfleaf.usercenter.common.ResponseCode;
+import com.qfleaf.usercenter.common.annotation.Authorized;
 import com.qfleaf.usercenter.model.User;
 import com.qfleaf.usercenter.model.dto.user.*;
 import com.qfleaf.usercenter.model.vo.LoginUserVO;
@@ -24,7 +25,6 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    // todo 业务优化
     // region 用户接口
     @PostMapping("register")
     public CommonResponse<Void> register(@Valid @RequestBody UserRegisterRequest userRegisterRequest) {
@@ -47,14 +47,15 @@ public class UserController {
     }
     // endregion
 
-    // todo 权限校验
     // region 管理员接口
+    @Authorized
     @GetMapping("list")
-    public CommonResponse<IPage<UserListVO>> list(UserQueryRequest userQueryRequest) {
+    public CommonResponse<IPage<UserListVO>> list(@Valid UserQueryRequest userQueryRequest) {
         IPage<UserListVO> userListVo = userService.findUserListVo(userQueryRequest);
         return ResultUtil.success(ResponseCode.SUCCESS, userListVo);
     }
 
+    @Authorized
     @GetMapping("{id}")
     public CommonResponse<UserVO> find(@PathVariable Integer id) {
         User user = userService.getById(id);
@@ -62,18 +63,21 @@ public class UserController {
         return ResultUtil.success(ResponseCode.SUCCESS, vo);
     }
 
+    @Authorized
     @PostMapping
     public CommonResponse<Void> save(@Valid @RequestBody UserCreateRequest userCreateRequest) {
         userService.createUser(userCreateRequest);
         return ResultUtil.success(ResponseCode.SUCCESS, null);
     }
 
+    @Authorized
     @PutMapping
     public CommonResponse<Void> update(@Valid @RequestBody UserUpdateRequest userUpdateRequest) {
         userService.updateUser(userUpdateRequest);
         return ResultUtil.success(ResponseCode.SUCCESS, null);
     }
 
+    @Authorized
     @DeleteMapping
     public CommonResponse<Void> delete(@RequestParam Integer id) {
         userService.removeById(id);
