@@ -18,7 +18,7 @@ public interface UserService extends IService<User> {
     Void register(UserRegisterRequest userRegisterRequest);
     UserLoginResponse login(UserLoginRequest userLoginRequest, HttpServletRequest request);
     LoginUserVO getCurrentUser(HttpServletRequest request);
-    Void logout(HttpServletRequest request);
+    void logout(HttpServletRequest request);
     void createUser(UserCreateRequest userCreateRequest);
     void updateUser(UserUpdateRequest userUpdateRequest);
     IPage<UserListVO> findUserListVo(UserQueryRequest userQueryRequest);

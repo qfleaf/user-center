@@ -43,7 +43,8 @@ public class UserController {
 
     @PostMapping("logout")
     public CommonResponse<Void> logout(HttpServletRequest request) {
-        return ResultUtil.success(ResponseCode.SUCCESS, userService.logout(request));
+        userService.logout(request);
+        return ResultUtil.success(ResponseCode.SUCCESS, null);
     }
     // endregion
 

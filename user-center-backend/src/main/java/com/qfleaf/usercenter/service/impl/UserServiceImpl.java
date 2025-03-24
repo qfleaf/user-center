@@ -59,6 +59,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         LoginStrategy loginStrategy = loginStrategyManager.getLoginStrategy(userLoginRequest.getLoginType());
         LoginUserVO loginUserVO = loginStrategy.doLogin(userLoginRequest);
         request.getSession().setAttribute("currentUser", loginUserVO);
+        // todo 构建登陆响应
         return new UserLoginResponse();
     }
 
@@ -72,9 +73,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public Void logout(HttpServletRequest request) {
+    public void logout(HttpServletRequest request) {
         request.getSession().removeAttribute("currentUser");
-        return null;
     }
     // endregion
 
