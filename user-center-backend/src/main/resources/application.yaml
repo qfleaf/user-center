@@ -8,10 +8,35 @@ spring:
 server:
   port: 8080
   servlet:
-    context-path: /api
+    context-path: /
 mybatis-plus:
   global-config:
     db-config:
       logic-delete-field: is_deleted # 全局逻辑删除字段名
       logic-delete-value: true # 逻辑已删除值
       logic-not-delete-value: false # 逻辑未删除值
+# springdoc-openapi项目配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+    version: openapi_3_1
+  group-configs:
+    - group: 'a-default'
+      display-name: "默认"
+      paths-to-match: '/**'
+      packages-to-scan: com.qfleaf.usercenter.controller
+  cache:
+    disabled: true
+# knife4j的增强配置，不需要增强可以不配
+knife4j:
+  enable: false
+  setting:
+    language: zh_cn
+    swagger-model-name: 实体模型
+logging:
+  level:
+    com.qfleaf: debug
