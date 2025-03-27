@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qfleaf.usercenter.common.CommonResponse;
 import com.qfleaf.usercenter.common.ResponseCode;
 import com.qfleaf.usercenter.common.annotation.Authorized;
+import com.qfleaf.usercenter.common.exception.BusinessException;
 import com.qfleaf.usercenter.model.User;
 import com.qfleaf.usercenter.model.dto.user.*;
 import com.qfleaf.usercenter.model.vo.LoginUserVO;
@@ -60,6 +61,9 @@ public class UserController {
     @GetMapping("{id}")
     public CommonResponse<UserVO> find(@PathVariable Integer id) {
         User user = userService.getById(id);
+        if (user == null) {
+            throw new BusinessException(ResponseCode.BAD_REQUEST, "用户不存在");
+        }
         UserVO vo = user.toVo();
         return ResultUtil.success(ResponseCode.SUCCESS, vo);
     }
